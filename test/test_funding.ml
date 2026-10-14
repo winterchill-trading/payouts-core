@@ -2,7 +2,10 @@ open! Core
 open Payouts_core
 open Helpers
 
-let source = Funding.Source.of_accounts (List.map Money.Currency.[ eur; usdc ] ~f:(fun c -> c, org_account c))
+let source =
+  Funding.Source.of_accounts
+    (List.map Money.Currency.[ eur; usdc ] ~f:(fun c -> c, org_account c))
+;;
 
 let print_plan (plan : Funding.Plan.t) =
   match plan with
@@ -16,10 +19,13 @@ let print_plan (plan : Funding.Plan.t) =
           [%message
             "fund"
               (account : Ledger.Account_id.t)
-              ~conversion:(Option.map conversion ~f:(fun c -> c.sell) : Money.Amount.t option)]
+              ~conversion:
+                (Option.map conversion ~f:(fun c -> c.sell) : Money.Amount.t option)]
         | Convert { from_; conversion; _ } ->
           [%message
-            "convert" (from_ : Ledger.Account_id.t) ~sell:(conversion.sell : Money.Amount.t)]
+            "convert"
+              (from_ : Ledger.Account_id.t)
+              ~sell:(conversion.sell : Money.Amount.t)]
         | Fail f -> [%message "fail" ~_:(f : Failure.t)]
       in
       print_s [%message (id : Line_id.t) ~_:(d : Sexp.t)]);
@@ -58,7 +64,8 @@ let%expect_test "line by line: fund what fits, in order" =
   in
   print_endline (available balances Money.Currency.eur);
   (* Planning again finds nothing left to fund. *)
-  print_plan (Funding.plan balances source b ~mode:Line_by_line ~now:(at 3) () |> Or_error.ok_exn);
+  print_plan
+    (Funding.plan balances source b ~mode:Line_by_line ~now:(at 3) () |> Or_error.ok_exn);
   [%expect
     {|
     ((id ada) (fund (account org:1/eur) (conversion ())))
@@ -87,9 +94,17 @@ let%expect_test "all or nothing: one short line refuses the plan" =
   print_plan plan;
   print_batch (Funding.apply b plan ~now:(at 2) |> Or_error.ok_exn);
   (* Without the CHF line and with enough money, everything is funded. *)
-  let b = Batch.cancel_line b ~policy:Approval.Policy.one_approval (Line_id.of_string "dee") ~now:(at 2) |> Or_error.ok_exn in
+  let b =
+    Batch.cancel_line
+      b
+      ~policy:Approval.Policy.one_approval
+      (Line_id.of_string "dee")
+      ~now:(at 2)
+    |> Or_error.ok_exn
+  in
   let balances = ledger [ eur "1400.00" ] in
-  print_plan (Funding.plan balances source b ~mode:All_or_nothing ~now:(at 2) () |> Or_error.ok_exn);
+  print_plan
+    (Funding.plan balances source b ~mode:All_or_nothing ~now:(at 2) () |> Or_error.ok_exn);
   [%expect
     {|
     (refused
@@ -123,8 +138,13 @@ let%expect_test "a short currency is bought with the funding currency" =
       ~hook
   in
   let balances = ledger [ eur "150.00"; chf "5.00" ] in
-  let b = approved_batch [ line "dee" (chf "93.00"); line "eve" (chf "5.00"); line "fay" (chf "93.00") ] in
-  let plan = Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn in
+  let b =
+    approved_batch
+      [ line "dee" (chf "93.00"); line "eve" (chf "5.00"); line "fay" (chf "93.00") ]
+  in
+  let plan =
+    Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn
+  in
   print_plan plan;
   let b = Funding.apply b plan ~now:(at 2) |> Or_error.ok_exn in
   print_batch b;
@@ -158,7 +178,10 @@ let%expect_test "a short currency is bought with the funding currency" =
   print_plan plan;
   let b = Funding.apply b plan ~now:(at 3) |> Or_error.ok_exn in
   print_batch b;
-  print_s [%sexp ((Option.value_exn (Batch.find_line b (Line_id.of_string "dee"))).funded_from : Line.Funded_from.t option)];
+  print_s
+    [%sexp
+      ((Option.value_exn (Batch.find_line b (Line_id.of_string "dee"))).funded_from
+       : Line.Funded_from.t option)];
   [%expect
     {|
     ((id dee) (convert (from_ org:1/eur) (sell "100.00 EUR")))
@@ -193,14 +216,16 @@ let%expect_test "hook refusals and missing funding accounts" =
       ~funding_currency:Money.Currency.eur
       ~hook:Conversion.Hook.none
   in
-  print_plan (Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn);
+  print_plan
+    (Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn);
   let source =
     Funding.Source.with_conversion
       (List.map Money.Currency.[ eur; chf; usdc ] ~f:(fun c -> c, org_account c))
       ~funding_currency:Money.Currency.eur
       ~hook:Conversion.Hook.none
   in
-  print_plan (Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn);
+  print_plan
+    (Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn);
   [%expect
     {|
     ((id dee) (fail (No_funding_account EUR)))
@@ -230,7 +255,9 @@ let%expect_test "the ledger refuses a second plan built on the same balances" =
       ]
   in
   let entries b =
-    match Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn with
+    match
+      Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn
+    with
     | Planned { entries; _ } -> entries
     | Refused _ -> assert false
   in
@@ -239,7 +266,8 @@ let%expect_test "the ledger refuses a second plan built on the same balances" =
     [%sexp
       (Payments_core.Booking.apply after_first (entries b2) |> Or_error.map ~f:ignore
        : unit Or_error.t)];
-  [%expect {|
+  [%expect
+    {|
     (Error
      ("entry would take an account below zero" (id org:1/eur)
       (balance_after "-600.00 EUR") (idempotency_key req-2:bob/fund)))
@@ -249,7 +277,9 @@ let%expect_test "the ledger refuses a second plan built on the same balances" =
 let%expect_test "release returns a funded line's hold" =
   let balances = ledger [ eur "1000.00" ] in
   let b = approved_batch [ line "ada" (eur "600.00") ] in
-  let plan = Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn in
+  let plan =
+    Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn
+  in
   let b = Funding.apply b plan ~now:(at 2) |> Or_error.ok_exn in
   let balances =
     match plan with
@@ -262,7 +292,10 @@ let%expect_test "release returns a funded line's hold" =
   print_s [%sexp (entry.idempotency_key : Ledger.Idempotency_key.t)];
   let balances = book balances [ entry ] in
   print_endline (available balances Money.Currency.eur);
-  let b = Batch.cancel_line b ~policy:Approval.Policy.one_approval line.id ~now:(at 3) |> Or_error.ok_exn in
+  let b =
+    Batch.cancel_line b ~policy:Approval.Policy.one_approval line.id ~now:(at 3)
+    |> Or_error.ok_exn
+  in
   print_batch b;
   [%expect
     {|

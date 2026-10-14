@@ -50,9 +50,7 @@ let%expect_test "the happy path, and moves the table refuses" =
   let ok r = Or_error.ok_exn r in
   let l = Line.approve l ~at:(at 1) |> ok in
   let l = Line.fund l funded_from ~at:(at 2) |> ok in
-  let l =
-    Line.submit l ~transfer:(Transfer.Id.of_string "tr-1") ~at:(at 3) () |> ok
-  in
+  let l = Line.submit l ~transfer:(Transfer.Id.of_string "tr-1") ~at:(at 3) () |> ok in
   let l = Line.settle l ~at:(at 4) |> ok in
   show (Ok l);
   show (Line.cancel l ~at:(at 5));
@@ -60,7 +58,8 @@ let%expect_test "the happy path, and moves the table refuses" =
   show (Ok l);
   print_s
     [%sexp
-      (List.map Line_status.names ~f:(Line.entered_at l) : Time_ns.Alternate_sexp.t option list)];
+      (List.map Line_status.names ~f:(Line.entered_at l)
+       : Time_ns.Alternate_sexp.t option list)];
   [%expect
     {|
     ("line cannot move" (line req-1:ada) (from Draft) (to_ Funded))
@@ -147,7 +146,8 @@ let%expect_test "keys and derived ledger ids" =
   List.iter Line_key.Leg.all ~f:(fun leg ->
     print_endline (Ledger.Idempotency_key.to_string (Line_key.derive key leg)));
   print_endline (Ledger.Hold_id.to_string (Line_key.hold_id key));
-  print_s [%sexp (Line_key.of_string_or_error (String.make 113 'a') : Line_key.t Or_error.t)];
+  print_s
+    [%sexp (Line_key.of_string_or_error (String.make 113 'a') : Line_key.t Or_error.t)];
   print_s [%sexp (Line_key.of_string_or_error "has space" : Line_key.t Or_error.t)];
   [%expect
     {|

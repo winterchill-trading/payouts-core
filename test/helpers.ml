@@ -85,12 +85,14 @@ let print_batch (b : Batch.t) =
         ~required:(b.approvals_required : int)
         ~revision:(b.revision : int)
         ~lines:
-          (List.map b.lines ~f:(fun l -> Line_id.to_string l.id, Line_status.name l.status)
+          (List.map b.lines ~f:(fun l ->
+             Line_id.to_string l.id, Line_status.name l.status)
            : (string * string) list)]
 ;;
 
 let org_account currency =
-  Ledger.Account_id.of_string ("org:1/" ^ String.lowercase (Money.Currency.to_string currency))
+  Ledger.Account_id.of_string
+    ("org:1/" ^ String.lowercase (Money.Currency.to_string currency))
 ;;
 
 let cash = Ledger.Account_id.of_string "bank:cash"
@@ -121,8 +123,9 @@ let currencies = Money.Currency.[ eur; chf; usdc ]
 
 let ledger deposits =
   let accounts =
-    Ledger.Account.create cash Asset ~allow_negative:true
-    :: List.map currencies ~f:(fun c -> Ledger.Account.create (org_account c) Liability)
+    (Ledger.Account.create cash Asset ~allow_negative:true
+     :: List.map currencies ~f:(fun c -> Ledger.Account.create (org_account c) Liability)
+    )
     @ Payments_core.Booking.Chart.accounts
         Payments_core.Booking.Chart.default
         ~rails:[ Sepa_credit; Intraledger ]
@@ -143,7 +146,9 @@ let convert balances ~sell ~buy ~at =
   incr seq;
   let leg amount ~from ~to_ =
     Ledger.Entry.create
-      ~idempotency_key:(Ledger.Idempotency_key.of_string (sprintf "fx-%d-%s" !seq (Money.Amount.to_decimal_string amount)))
+      ~idempotency_key:
+        (Ledger.Idempotency_key.of_string
+           (sprintf "fx-%d-%s" !seq (Money.Amount.to_decimal_string amount)))
       ~kind:(Transfer "fx")
       ~effective_at:at
       ~recorded_at:at

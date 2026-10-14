@@ -5,13 +5,18 @@ module Transfer = Payments_core.Transfer
 module Booking = Payments_core.Booking
 
 let chart = Booking.Chart.default
-let source = Funding.Source.of_accounts [ Money.Currency.chf, org_account Money.Currency.chf ]
+
+let source =
+  Funding.Source.of_accounts [ Money.Currency.chf, org_account Money.Currency.chf ]
+;;
 
 (* A funded batch of two CHF lines paid intraledger, and the balances with both holds. *)
 let funded () =
   let balances = ledger [ chf "500.00" ] in
   let b = approved_batch [ line "ada" (chf "120.00"); line "bob" (chf "80.00") ] in
-  let plan = Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn in
+  let plan =
+    Funding.plan balances source b ~mode:Line_by_line ~now:(at 2) () |> Or_error.ok_exn
+  in
   let b = Funding.apply b plan ~now:(at 2) |> Or_error.ok_exn in
   match plan with
   | Planned { entries; _ } -> b, book balances entries
@@ -32,9 +37,11 @@ let show_balances balances =
   print_s
     [%message
       ""
-        ~available:(Ledger.Balances.available balances account Money.Currency.chf : Money.Amount.t)
+        ~available:
+          (Ledger.Balances.available balances account Money.Currency.chf : Money.Amount.t)
         ~held:(Ledger.Balances.held balances account Money.Currency.chf : Money.Amount.t)
-        ~posted:(Ledger.Balances.posted balances account Money.Currency.chf : Money.Amount.t)]
+        ~posted:
+          (Ledger.Balances.posted balances account Money.Currency.chf : Money.Amount.t)]
 ;;
 
 let%expect_test "submission moves the funding hold to the transfer" =
@@ -42,7 +49,14 @@ let%expect_test "submission moves the funding hold to the transfer" =
   show_balances balances;
   let transfer = authorized_transfer b "ada" in
   let b, entries =
-    Submission.submit chart balances b (Line_id.of_string "ada") ~transfer ~event_id:"evt-1" ~now:(at 3)
+    Submission.submit
+      chart
+      balances
+      b
+      (Line_id.of_string "ada")
+      ~transfer
+      ~event_id:"evt-1"
+      ~now:(at 3)
     |> Or_error.ok_exn
   in
   List.iter entries ~f:(fun e ->
@@ -62,7 +76,9 @@ let%expect_test "submission moves the funding hold to the transfer" =
     |> Or_error.ok_exn
   in
   let balances = book balances settle in
-  let transfer = Transfer.transition transfer ~to_:Settled ~at:(at 4) |> Or_error.ok_exn in
+  let transfer =
+    Transfer.transition transfer ~to_:Settled ~at:(at 4) |> Or_error.ok_exn
+  in
   let b = Submission.observe b transfer ~now:(at 4) |> Or_error.ok_exn in
   show_balances balances;
   print_batch b;
@@ -85,7 +101,14 @@ let%expect_test "submission checks the line and the transfer" =
   let b, balances = funded () in
   let transfer = authorized_transfer b "ada" in
   let try_submit ?(b = b) name transfer =
-    Submission.submit chart balances b (Line_id.of_string name) ~transfer ~event_id:"evt-1" ~now:(at 3)
+    Submission.submit
+      chart
+      balances
+      b
+      (Line_id.of_string name)
+      ~transfer
+      ~event_id:"evt-1"
+      ~now:(at 3)
     |> Or_error.map ~f:ignore
     |> [%sexp_of: unit Or_error.t]
     |> print_s
@@ -96,7 +119,8 @@ let%expect_test "submission checks the line and the transfer" =
   try_submit ~b:unfunded "ada" transfer;
   print_s
     [%sexp
-      (Submission.observe b transfer ~now:(at 3) |> Or_error.map ~f:ignore : unit Or_error.t)];
+      (Submission.observe b transfer ~now:(at 3) |> Or_error.map ~f:ignore
+       : unit Or_error.t)];
   [%expect
     {|
     (Error ("transfer does not match the line" amount))

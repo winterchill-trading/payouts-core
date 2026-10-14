@@ -46,8 +46,8 @@ val ledger : Money.Amount.t list -> Ledger.Balances.t
 (** Applies entries as a journal would; raises on a refusal. *)
 val book : Ledger.Balances.t -> Ledger.Entry.t list -> Ledger.Balances.t
 
-(** Moves [sell] out of the org's account in its currency and [buy] into the org's
-    account in its currency, as an executed conversion would. *)
+(** Moves [sell] out of the org's account in its currency and [buy] into the org's account
+    in its currency, as an executed conversion would. *)
 val convert
   :  Ledger.Balances.t
   -> sell:Money.Amount.t

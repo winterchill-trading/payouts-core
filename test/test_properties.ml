@@ -15,7 +15,10 @@ module Op = struct
 end
 
 let funded_from (l : Line.t) : Line.Funded_from.t =
-  { account = org_account (Line.currency l); hold = Line_key.hold_id l.key; conversion = None }
+  { account = org_account (Line.currency l)
+  ; hold = Line_key.hold_id l.key
+  ; conversion = None
+  }
 ;;
 
 let step (l : Line.t) (op : Op.t) ~at =
@@ -35,14 +38,17 @@ let%test_unit "line moves follow the table, and final statuses absorb" =
     ~sexp_of:[%sexp_of: Op.t list]
     ~f:(fun ops ->
       let l, moves =
-        List.foldi ops ~init:(line "ada" (chf "1.00"), 0) ~f:(fun i (l, moves) op ->
-          let before = l.status in
-          match step l op ~at:(at i) with
-          | Ok l' ->
-            assert (Line_status.can_move ~from:before ~to_:l'.status);
-            assert (not (Line_status.is_final before));
-            l', moves + 1
-          | Error _ -> l, moves)
+        List.foldi
+          ops
+          ~init:(line "ada" (chf "1.00"), 0)
+          ~f:(fun i (l, moves) op ->
+            let before = l.status in
+            match step l op ~at:(at i) with
+            | Ok l' ->
+              assert (Line_status.can_move ~from:before ~to_:l'.status);
+              assert (not (Line_status.is_final before));
+              l', moves + 1
+            | Error _ -> l, moves)
       in
       [%test_result: int] (List.length l.history) ~expect:(moves + 1);
       (* Once final, nothing moves the line again. *)
@@ -51,8 +57,12 @@ let%test_unit "line moves follow the table, and final statuses absorb" =
         List.iter Op.all ~f:(fun op -> assert (Result.is_error (step l op ~at:(at 1000)))))
 ;;
 
-let%test_unit "approval needs as many different people as the policy asks, never the creator" =
-  let actors = List.map [ "maker"; "checker"; "checker-2"; "checker-3" ] ~f:Actor_id.of_string in
+let%test_unit "approval needs as many different people as the policy asks, never the \
+               creator"
+  =
+  let actors =
+    List.map [ "maker"; "checker"; "checker-2"; "checker-3" ] ~f:Actor_id.of_string
+  in
   Quickcheck.test
     (Quickcheck.Generator.both
        (Int.gen_incl 0 3)
@@ -98,14 +108,17 @@ let%test_unit "approval needs as many different people as the policy asks, never
 
 let amounts_gen =
   List.gen_with_length 6 (Int.gen_incl 1 50_000)
-  |> Quickcheck.Generator.map ~f:(List.map ~f:(Money.Amount.of_minor_units_int Money.Currency.eur))
+  |> Quickcheck.Generator.map
+       ~f:(List.map ~f:(Money.Amount.of_minor_units_int Money.Currency.eur))
 ;;
 
 let funding_case mode (balance, amounts) =
   let balances = ledger [ Money.Amount.of_minor_units_int Money.Currency.eur balance ] in
   let lines = List.mapi amounts ~f:(fun i a -> line (sprintf "p%d" i) a) in
   let b = approved_batch lines in
-  let source = Funding.Source.of_accounts [ Money.Currency.eur, org_account Money.Currency.eur ] in
+  let source =
+    Funding.Source.of_accounts [ Money.Currency.eur, org_account Money.Currency.eur ]
+  in
   let plan = Funding.plan balances source b ~mode ~now:(at 2) () |> Or_error.ok_exn in
   let b = Funding.apply b plan ~now:(at 2) |> Or_error.ok_exn in
   let balances =
@@ -118,14 +131,18 @@ let funding_case mode (balance, amounts) =
 
 let funding_gen = Quickcheck.Generator.both (Int.gen_incl 0 150_000) amounts_gen
 
-let%test_unit "line by line funding never over-commits and holds exactly the funded lines" =
+let%test_unit "line by line funding never over-commits and holds exactly the funded lines"
+  =
   Quickcheck.test
     funding_gen
     ~sexp_of:[%sexp_of: int * Money.Amount.t list]
     ~f:(fun case ->
       let b, balances = funding_case Line_by_line case in
       let account = org_account Money.Currency.eur in
-      assert (not (Money.Amount.is_negative (Ledger.Balances.available balances account Money.Currency.eur)));
+      assert (
+        not
+          (Money.Amount.is_negative
+             (Ledger.Balances.available balances account Money.Currency.eur)));
       let funded = Batch.lines_in b "funded" |> List.map ~f:(fun l -> l.amount) in
       [%test_result: Money.Amount.t]
         (Ledger.Balances.held balances account Money.Currency.eur)
@@ -172,8 +189,10 @@ let%test_unit "batch totals: every line in exactly one bucket" =
         List.foldi per_line ~init:b ~f:(fun i b ops ->
           List.fold ops ~init:b ~f:(fun b op ->
             match
-              Batch.update_line b (Line_id.of_string (sprintf "p%d" i)) ~f:(fun l ->
-                step l op ~at:(at 5))
+              Batch.update_line
+                b
+                (Line_id.of_string (sprintf "p%d" i))
+                ~f:(fun l -> step l op ~at:(at 5))
             with
             | Ok b -> b
             | Error _ -> b))

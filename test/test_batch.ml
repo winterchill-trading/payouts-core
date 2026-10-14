@@ -45,7 +45,9 @@ let%expect_test "maker-checker, one approval per person, then approved" =
   print_batch b;
   print_s [%sexp (Batch.totals b : Money.Amount.t list)];
   show_refusal (Batch.approve b ~policy ~approver:maker ~now:(at 1));
-  let b = Batch.approve b ~policy ~approver:checker ~now:(at 1) |> Result.ok |> Option.value_exn in
+  let b =
+    Batch.approve b ~policy ~approver:checker ~now:(at 1) |> Result.ok |> Option.value_exn
+  in
   print_batch b;
   show_refusal (Batch.approve b ~policy ~approver:second_checker ~now:(at 2));
   [%expect
@@ -88,8 +90,13 @@ let%expect_test "per-currency thresholds" =
   print_batch (create [ line "ada" (eur "500.00"); line "bob" (chf "1.00") ]);
   let big = create [ line "ada" (eur "6000.00"); line "bob" (eur "4000.01") ] in
   print_batch big;
-  show_refusal (Batch.approve big ~policy ~approver:(Actor_id.of_string "viewer") ~now:(at 1));
-  let big = Batch.approve big ~policy ~approver:checker ~now:(at 1) |> Result.ok |> Option.value_exn in
+  show_refusal
+    (Batch.approve big ~policy ~approver:(Actor_id.of_string "viewer") ~now:(at 1));
+  let big =
+    Batch.approve big ~policy ~approver:checker ~now:(at 1)
+    |> Result.ok
+    |> Option.value_exn
+  in
   show_refusal (Batch.approve big ~policy ~approver:checker ~now:(at 2));
   show_refusal (Batch.approve big ~policy ~approver:second_checker ~now:(at 2));
   [%expect
@@ -127,9 +134,7 @@ let%expect_test "reject and cancel" =
 
 let%expect_test "cancelling a line before approval clears approvals" =
   let policy =
-    Approval.Policy.thresholds
-      ~second_approver_above:(fun _ -> Some (eur "1000.00"))
-      ()
+    Approval.Policy.thresholds ~second_approver_above:(fun _ -> Some (eur "1000.00")) ()
   in
   let b =
     Batch.create
@@ -141,11 +146,17 @@ let%expect_test "cancelling a line before approval clears approvals" =
       ~now:t0
     |> Or_error.ok_exn
   in
-  let b = Batch.approve b ~policy ~approver:checker ~now:(at 1) |> Result.ok |> Option.value_exn in
+  let b =
+    Batch.approve b ~policy ~approver:checker ~now:(at 1) |> Result.ok |> Option.value_exn
+  in
   print_batch b;
-  let b = Batch.cancel_line b ~policy (Line_id.of_string "bob") ~now:(at 2) |> Or_error.ok_exn in
+  let b =
+    Batch.cancel_line b ~policy (Line_id.of_string "bob") ~now:(at 2) |> Or_error.ok_exn
+  in
   print_batch b;
-  let b = Batch.cancel_line b ~policy (Line_id.of_string "ada") ~now:(at 3) |> Or_error.ok_exn in
+  let b =
+    Batch.cancel_line b ~policy (Line_id.of_string "ada") ~now:(at 3) |> Or_error.ok_exn
+  in
   print_batch b;
   show_refusal (Batch.approve b ~policy ~approver:checker ~now:(at 4));
   [%expect
@@ -162,9 +173,12 @@ let%expect_test "cancelling a line before approval clears approvals" =
 
 let%expect_test "progress after approval: partial failure" =
   let b =
-    approved_batch [ line "ada" (chf "1.00"); line "bob" (chf "2.00"); line "cy" (chf "3.00") ]
+    approved_batch
+      [ line "ada" (chf "1.00"); line "bob" (chf "2.00"); line "cy" (chf "3.00") ]
   in
-  let step b name f = Batch.update_line b (Line_id.of_string name) ~f |> Or_error.ok_exn in
+  let step b name f =
+    Batch.update_line b (Line_id.of_string name) ~f |> Or_error.ok_exn
+  in
   let fund (l : Line.t) =
     Line.fund
       l
@@ -175,7 +189,11 @@ let%expect_test "progress after approval: partial failure" =
       ~at:(at 2)
   in
   let submit name (l : Line.t) =
-    Line.submit l ~transfer:(Payments_core.Transfer.Id.of_string ("tr-" ^ name)) ~at:(at 3) ()
+    Line.submit
+      l
+      ~transfer:(Payments_core.Transfer.Id.of_string ("tr-" ^ name))
+      ~at:(at 3)
+      ()
   in
   let b = step b "ada" fund in
   let b = step b "ada" (submit "ada") in

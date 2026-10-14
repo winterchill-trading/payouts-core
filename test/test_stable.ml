@@ -2,8 +2,8 @@ open! Core
 open Payouts_core
 open Helpers
 
-(* Pinned bin_prot shape digests. A change here means stored values written by an
-   earlier version can no longer be read: add a V2 instead of editing V1. *)
+(* Pinned bin_prot shape digests. A change here means stored values written by an earlier
+   version can no longer be read: add a V2 instead of editing V1. *)
 let%expect_test "stable digests" =
   print_endline [%bin_digest: Batch_id.Stable.V1.t];
   print_endline [%bin_digest: Line_id.Stable.V1.t];
@@ -15,7 +15,8 @@ let%expect_test "stable digests" =
   print_endline [%bin_digest: Line.Stable.V1.t];
   print_endline [%bin_digest: Batch.Stable.V1.t];
   print_endline [%bin_digest: Receipt.Stable.V1.t];
-  [%expect {|
+  [%expect
+    {|
     d9a8da25d5656b016fb4dbdc2e4197fb
     d9a8da25d5656b016fb4dbdc2e4197fb
     d9a8da25d5656b016fb4dbdc2e4197fb
@@ -30,17 +31,26 @@ let%expect_test "stable digests" =
 ;;
 
 let%expect_test "a batch round-trips through bin_prot and sexp" =
-  let b = approved_batch [ line ~reference:"Invoice 7" "ada" (eur "12.50"); line "bob" (chf "3.00") ] in
+  let b =
+    approved_batch
+      [ line ~reference:"Invoice 7" "ada" (eur "12.50"); line "bob" (chf "3.00") ]
+  in
   let b =
     Batch.update_line b (Line_id.of_string "bob") ~f:(fun l ->
-      Line.fail l (Insufficient_funds { required = chf "3.00"; available = chf "0.00" }) ~at:(at 2))
+      Line.fail
+        l
+        (Insufficient_funds { required = chf "3.00"; available = chf "0.00" })
+        ~at:(at 2))
     |> Or_error.ok_exn
   in
   let bin = Binable.to_string (module Batch.Stable.V1) b in
   [%test_result: Batch.t] (Binable.of_string (module Batch.Stable.V1) bin) ~expect:b;
-  [%test_result: Batch.t] (Batch.Stable.V1.t_of_sexp (Batch.Stable.V1.sexp_of_t b)) ~expect:b;
+  [%test_result: Batch.t]
+    (Batch.Stable.V1.t_of_sexp (Batch.Stable.V1.sexp_of_t b))
+    ~expect:b;
   print_s [%sexp (b : Batch.Stable.V1.t)];
-  [%expect {|
+  [%expect
+    {|
     ((id batch-1) (title "March contractors") (created_by maker)
      (created_at "2027-03-01 09:00:00Z")
      (lines
