@@ -26,3 +26,6 @@ module Line = Line
 
 (** Batch approval policies (a hook) and refusals. *)
 module Approval = Approval
+
+(** Batches: approval, cancellation, derived progress. *)
+module Batch = Batch
