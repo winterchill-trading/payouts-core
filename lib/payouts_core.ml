@@ -20,3 +20,6 @@ module Line_status = Line_status
 
 (** Buying a line's currency through an FX hook. *)
 module Conversion = Conversion
+
+(** One payment of a batch. *)
+module Line = Line
