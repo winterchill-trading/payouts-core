@@ -47,3 +47,6 @@ module Store = Store
 
 (** An in-memory store. *)
 module Store_memory = Store_memory
+
+(** Scenarios every store implementation must pass. *)
+module Store_conformance = Store_conformance
