@@ -8,3 +8,6 @@ module Line_id = Line_id
 
 (** Who created or approved a batch. *)
 module Actor_id = Actor_id
+
+(** Per-line idempotency keys and the ledger keys derived from them. *)
+module Line_key = Line_key
