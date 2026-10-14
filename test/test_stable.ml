@@ -24,9 +24,9 @@ let%expect_test "stable digests" =
     6c9ca001dbebc5be18b8b1c35bba8d0d
     5e233ca245cf78f3c4d75e47cddcd301
     a4ee441073ed849d54af2ef02fd88bf6
-    2a980bb05704772709c84855bf1bafb5
-    b1d67a4ce208c6236b34d5852f1fc40f
-    6df6f25fc479bc7d52adb98ca14d7fd8
+    f73ae2bddc0507077937658923828352
+    a38258355bce9e76b00f487f3c19f134
+    0ba342cd903c112a8cab7c13e3ab8340
     |}]
 ;;
 
@@ -82,5 +82,39 @@ let%expect_test "a batch round-trips through bin_prot and sexp" =
      (approvals_required 1)
      (approvals (((by checker) (at "2027-03-01 09:01:00Z")))) (status Approved)
      (decided_at ("2027-03-01 09:01:00Z")) (revision 2))
+    |}]
+;;
+
+let%expect_test "a line on a UK rail round-trips" =
+  let payee =
+    Payments_core.Beneficiary.create
+      ~id:(Payments_core.Beneficiary.Id.of_string "ben-uk")
+      ~owner:"org-1"
+      ~name:"Ada Example"
+      ~rail:Faster_payments
+      ~now:t0
+      "04-00-04 12345678"
+    |> Or_error.ok_exn
+  in
+  let gbp s = Money.Amount.of_decimal_string Money.Currency.gbp s |> Or_error.ok_exn in
+  let create amount =
+    Line.create
+      ~id:(Line_id.of_string "uk")
+      ~key:(Line_key.of_string "req-9:uk")
+      ~payee
+      ~rail:Faster_payments
+      ~amount
+      ~now:t0
+      ()
+  in
+  print_s [%sexp (create (eur "1.00") |> Or_error.map ~f:ignore : unit Or_error.t)];
+  let line = create (gbp "250.00") |> Or_error.ok_exn in
+  let bin = Binable.to_string (module Line.Stable.V1) line in
+  [%test_result: Line.t] (Binable.of_string (module Line.Stable.V1) bin) ~expect:line;
+  [%expect
+    {|
+    (Error
+     ("rail pays another currency" (rail Faster_payments) (required GBP)
+      (currency EUR)))
     |}]
 ;;

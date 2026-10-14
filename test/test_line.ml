@@ -31,7 +31,8 @@ let%expect_test "creation checks amount, rail, currency and reference" =
     {|
     Draft
     ("amount must be positive" (amount "0.00 EUR"))
-    ("SEPA rails pay EUR only" (currency CHF))
+    ("rail pays another currency" (rail Sepa_credit) (required EUR)
+     (currency CHF))
     ("payee cannot be reached on this rail" (rail Lightning))
     ("reference too long" (max_reference_length 140) (length 141))
     "reference has a line break"

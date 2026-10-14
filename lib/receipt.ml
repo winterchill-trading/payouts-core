@@ -32,7 +32,7 @@ module Stable = struct
       ; key : Line_key.Stable.V1.t
       ; payee_name : string
       ; destination : string
-      ; rail : Payments_core.Rail.Stable.V1.t
+      ; rail : Payments_core.Rail.Stable.V2.t
       ; amount : Money.Amount.Stable.V1.t
       ; reference : string
       ; outcome : Outcome.Stable.V1.t

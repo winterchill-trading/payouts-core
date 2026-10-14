@@ -24,8 +24,8 @@ module Stable = struct
     type t =
       { id : Line_id.Stable.V1.t
       ; key : Line_key.Stable.V1.t
-      ; payee : Beneficiary.Stable.V1.t
-      ; rail : Rail.Stable.V1.t
+      ; payee : Beneficiary.Stable.V2.t
+      ; rail : Rail.Stable.V2.t
       ; amount : Money.Amount.Stable.V1.t
       ; reference : string
       ; status : Line_status.Stable.V1.t
@@ -43,12 +43,16 @@ include Stable.V1
 let max_reference_length = 140
 let currency t = Money.Amount.currency t.amount
 
-let is_sepa (rail : Rail.t) =
-  (* A wildcard on purpose: payments-core gains rails over time, and only the SEPA ones
-     restrict the currency here. *)
-  match rail with
-  | Sepa_credit | Sepa_instant -> true
-  | _ -> false
+(* The currency a rail is limited to, if any. *)
+let rail_currency (rail : Rail.t) =
+  if Rail.is_uk rail
+  then Some Money.Currency.gbp
+  else (
+    (* A wildcard on purpose: payments-core gains rails over time, and only SEPA and the
+       UK rails restrict the currency. *)
+    match rail with
+    | Sepa_credit | Sepa_instant -> Some Money.Currency.eur
+    | _ -> None)
 ;;
 
 let create ~id ~key ~payee ~rail ~amount ?(reference = "") ~now () =
@@ -65,14 +69,16 @@ let create ~id ~key ~payee ~rail ~amount ?(reference = "") ~now () =
       Or_error.error_s [%message "payee cannot be reached on this rail" (rail : Rail.t)]
   in
   let%bind () =
-    if is_sepa rail
-       && not (Money.Currency.equal (Money.Amount.currency amount) Money.Currency.eur)
-    then
+    match rail_currency rail with
+    | Some required
+      when not (Money.Currency.equal (Money.Amount.currency amount) required) ->
       Or_error.error_s
         [%message
-          "SEPA rails pay EUR only"
+          "rail pays another currency"
+            (rail : Rail.t)
+            (required : Money.Currency.t)
             ~currency:(Money.Amount.currency amount : Money.Currency.t)]
-    else Ok ()
+    | Some _ | None -> Ok ()
   in
   let%bind () =
     if String.length reference > max_reference_length
