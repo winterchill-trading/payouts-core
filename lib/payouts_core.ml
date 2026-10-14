@@ -23,3 +23,6 @@ module Conversion = Conversion
 
 (** One payment of a batch. *)
 module Line = Line
+
+(** Batch approval policies (a hook) and refusals. *)
+module Approval = Approval
