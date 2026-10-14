@@ -112,7 +112,7 @@ let summary t : Approval.Summary.t =
 let check_unique ~what ~compare items =
   match List.find_a_dup items ~compare with
   | None -> Ok ()
-  | Some _ -> Or_error.error_s [%message "duplicate" what]
+  | Some _ -> Or_error.errorf "duplicate %s" what
 ;;
 
 (* Moves every draft line to [Approved]; used when the last approval arrives. *)
