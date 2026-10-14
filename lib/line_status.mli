@@ -13,14 +13,14 @@
     - [Submitted]: the transfer left for the rail; the hold moved to the transfer.
     - [Settled]: the rail confirmed the payment.
     - [Failed]: funding, submission or the rail failed; any reserved funds go back.
-    - [Returned]: the payee's bank sent the money back (only on returnable rails, after
-      or instead of settlement).
+    - [Returned]: the payee's bank sent the money back (only on returnable rails, after or
+      instead of settlement).
     - [Cancelled]: taken out before submission (batch rejected or cancelled, or the line
       cancelled on its own).
 
-    [Failed], [Returned] and [Cancelled] are final. A failed line is not retried in
-    place: paying again is a new line with a new key, so the ledger never sees one key
-    twice for two attempts. *)
+    [Failed], [Returned] and [Cancelled] are final. A failed line is not retried in place:
+    paying again is a new line with a new key, so the ledger never sees one key twice for
+    two attempts. *)
 
 open! Core
 
@@ -49,12 +49,12 @@ val allowed_transitions : (string * string list) list
     never allowed. *)
 val can_move : from:t -> to_:t -> bool
 
-(** No transition leaves this status. [Settled] is not final: a settled payment can
-    still be returned on a returnable rail; see {!is_resolved}. *)
+(** No transition leaves this status. [Settled] is not final: a settled payment can still
+    be returned on a returnable rail; see {!is_resolved}. *)
 val is_final : t -> bool
 
-(** The batch has nothing more to do for this line: it is final, or settled on a rail
-    that cannot return it. *)
+(** The batch has nothing more to do for this line: it is final, or settled on a rail that
+    cannot return it. *)
 val is_resolved : t -> rail:Payments_core.Rail.t -> bool
 
 (** Before submission: the line can still be cancelled. *)

@@ -1,11 +1,10 @@
 (** Buying a line's currency with another currency the payer holds.
 
     payouts-core does not price foreign exchange. When a line is in a currency the payer
-    has no account in (or not enough of), funding asks a {!Hook.t} for a firm price to
-    buy exactly the line's amount; the caller executes that conversion through its FX
-    library and funds the line from the bought currency afterwards. A rate library that
-    makes buy-fixed quotes plugs in by mapping its quote id, sold and bought amounts onto
-    {!t}. *)
+    has no account in (or not enough of), funding asks a {!Hook.t} for a firm price to buy
+    exactly the line's amount; the caller executes that conversion through its FX library
+    and funds the line from the bought currency afterwards. A rate library that makes
+    buy-fixed quotes plugs in by mapping its quote id, sold and bought amounts onto {!t}. *)
 
 open! Core
 
@@ -19,10 +18,12 @@ type t =
 module Hook : sig
   type conversion := t
 
-  (** [quote ~sell ~buy] prices buying [buy] with currency [sell]. An [Error] is shown
-      to people as the reason the line could not be funded (no rate, a stale rate, an
-      amount too small). *)
-  type t = { quote : sell:Money.Currency.t -> buy:Money.Amount.t -> (conversion, string) Result.t }
+  (** [quote ~sell ~buy] prices buying [buy] with currency [sell]. An [Error] is shown to
+      people as the reason the line could not be funded (no rate, a stale rate, an amount
+      too small). *)
+  type t =
+    { quote : sell:Money.Currency.t -> buy:Money.Amount.t -> (conversion, string) Result.t
+    }
 
   (** Refuses every conversion: lines are funded only in currencies already held. *)
   val none : t

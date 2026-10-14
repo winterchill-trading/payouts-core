@@ -17,8 +17,8 @@
 
     {2 Revisions}
 
-    Every successful change increments [revision], so a store can refuse a write based
-    on a stale read ({!Store.S.update}). *)
+    Every successful change increments [revision], so a store can refuse a write based on
+    a stale read ({!Store.S.update}). *)
 
 open! Core
 
@@ -117,8 +117,8 @@ val approve
   -> now:Time_ns.t
   -> (t, Approval.Refusal.t) Result.t
 
-(** Rejects a pending batch; its lines are cancelled. The creator may not reject their
-    own batch (they cancel it instead); others need the policy's [authorize]. *)
+(** Rejects a pending batch; its lines are cancelled. The creator may not reject their own
+    batch (they cancel it instead); others need the policy's [authorize]. *)
 val reject
   :  t
   -> policy:Approval.Policy.t
@@ -153,9 +153,9 @@ val lines_in : t -> string -> Line.t list
 (** Cancels one line. Before approval the batch's approvals are cleared and the number
     required is computed again, as the batch is no longer what was approved; cancelling
     the last line leaves a batch whose progress is [Cancelled]. A changed batch needs at
-    least one approval even when the policy would now approve it at once. After approval only a
-    line not yet submitted can be cancelled; a funded line's hold must be released with
-    {!Funding.release}. *)
+    least one approval even when the policy would now approve it at once. After approval
+    only a line not yet submitted can be cancelled; a funded line's hold must be released
+    with {!Funding.release}. *)
 val cancel_line
   :  t
   -> policy:Approval.Policy.t
@@ -163,9 +163,8 @@ val cancel_line
   -> now:Time_ns.t
   -> t Or_error.t
 
-(** Applies [f] to one line of an approved batch and keeps the result if the line kept
-    its id and key. The building block of {!Funding}, {!Submission} and transfer
-    updates. *)
+(** Applies [f] to one line of an approved batch and keeps the result if the line kept its
+    id and key. The building block of {!Funding}, {!Submission} and transfer updates. *)
 val update_line : t -> Line_id.t -> f:(Line.t -> Line.t Or_error.t) -> t Or_error.t
 
 module Stable : sig

@@ -24,36 +24,37 @@ module Make (M : Monad.S) = struct
 
   let insert t (batch : Batch.t) =
     M.return
-      (match Hashtbl.find t.batches batch.id with
-       | Some existing when Store.same_request existing batch -> Duplicate existing
-       | Some _ -> Conflict "batch id already used by another batch"
-       | None ->
-         (match
-            List.find batch.lines ~f:(fun l -> Hashtbl.mem t.line_keys l.key)
-          with
-          | Some line ->
-            Conflict (sprintf "line key %s belongs to another batch" (Line_key.to_string line.key))
-          | None ->
-            Hashtbl.set t.batches ~key:batch.id ~data:batch;
-            List.iter batch.lines ~f:(fun l ->
-              Hashtbl.set t.line_keys ~key:l.key ~data:(batch.id, l.id));
-            index_transfers t batch;
-            Inserted)
-        : Store.Insert_result.t)
+      ((match Hashtbl.find t.batches batch.id with
+        | Some existing when Store.same_request existing batch -> Duplicate existing
+        | Some _ -> Conflict "batch id already used by another batch"
+        | None ->
+          (match List.find batch.lines ~f:(fun l -> Hashtbl.mem t.line_keys l.key) with
+           | Some line ->
+             Conflict
+               (sprintf
+                  "line key %s belongs to another batch"
+                  (Line_key.to_string line.key))
+           | None ->
+             Hashtbl.set t.batches ~key:batch.id ~data:batch;
+             List.iter batch.lines ~f:(fun l ->
+               Hashtbl.set t.line_keys ~key:l.key ~data:(batch.id, l.id));
+             index_transfers t batch;
+             Inserted))
+       : Store.Insert_result.t)
   ;;
 
   let find t id = M.return (Hashtbl.find t.batches id)
 
   let update t (batch : Batch.t) ~expected_revision =
     M.return
-      (match Hashtbl.find t.batches batch.id with
-       | None -> Not_found
-       | Some current when current.revision <> expected_revision -> Stale current
-       | Some _ ->
-         Hashtbl.set t.batches ~key:batch.id ~data:batch;
-         index_transfers t batch;
-         Updated
-        : Store.Update_result.t)
+      ((match Hashtbl.find t.batches batch.id with
+        | None -> Not_found
+        | Some current when current.revision <> expected_revision -> Stale current
+        | Some _ ->
+          Hashtbl.set t.batches ~key:batch.id ~data:batch;
+          index_transfers t batch;
+          Updated)
+       : Store.Update_result.t)
   ;;
 
   let find_by_line_key t key = M.return (Hashtbl.find t.line_keys key)

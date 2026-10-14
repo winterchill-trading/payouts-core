@@ -57,9 +57,13 @@ module Make (M : Monad.S) (Store : Store.S with type 'a io := 'a M.t) = struct
       Store.insert store (batch "a" [ "x", chf "11.00"; "y", chf "20.00" ])
     in
     (* Batch b reuses a line key of batch a. *)
-    let%bind key_reused = Store.insert store (batch ~key_batch:"a" "b" [ "x", chf "10.00" ]) in
+    let%bind key_reused =
+      Store.insert store (batch ~key_batch:"a" "b" [ "x", chf "10.00" ])
+    in
     let%bind b_missing = Store.find store (Batch_id.of_string "conformance-b") in
-    let%bind by_key = Store.find_by_line_key store (Line_key.of_string "conformance-a-y") in
+    let%bind by_key =
+      Store.find_by_line_key store (Line_key.of_string "conformance-a-y")
+    in
     let approved =
       match Batch.approve a ~policy ~approver:checker ~now with
       | Ok b -> b
@@ -68,7 +72,9 @@ module Make (M : Monad.S) (Store : Store.S with type 'a io := 'a M.t) = struct
     let%bind stale = Store.update store approved ~expected_revision:5 in
     let%bind updated = Store.update store approved ~expected_revision:0 in
     let%bind replayed = Store.update store approved ~expected_revision:0 in
-    let%bind missing = Store.update store (batch "zz" [ "x", chf "1.00" ]) ~expected_revision:0 in
+    let%bind missing =
+      Store.update store (batch "zz" [ "x", chf "1.00" ]) ~expected_revision:0
+    in
     let%bind found = Store.find store a.id in
     let fund (l : Line.t) =
       Line.fund
@@ -95,7 +101,9 @@ module Make (M : Monad.S) (Store : Store.S with type 'a io := 'a M.t) = struct
     let%bind awaiting = Store.list store ~progress:Awaiting_approval () in
     let%bind approved_queue = Store.lines_in store "approved" in
     let%bind submitted_queue = Store.lines_in store "submitted" in
-    let ids batches = List.map batches ~f:(fun (b : Batch.t) -> Batch_id.to_string b.id) in
+    let ids batches =
+      List.map batches ~f:(fun (b : Batch.t) -> Batch_id.to_string b.id)
+    in
     let pairs = List.map ~f:(fun (b, l) -> Batch_id.to_string b, Line_id.to_string l) in
     return
       (Or_error.combine_errors_unit

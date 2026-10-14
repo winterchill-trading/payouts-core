@@ -36,9 +36,9 @@ type t = private
 (** 140 characters: the SEPA unstructured remittance limit. *)
 val max_reference_length : int
 
-(** A [Draft] line. Fails on a non-positive amount, a payee the rail cannot reach, a
-    SEPA rail with a currency other than EUR, or a reference that is too long or has
-    line breaks. *)
+(** A [Draft] line. Fails on a non-positive amount, a payee the rail cannot reach, a SEPA
+    rail with a currency other than EUR, or a reference that is too long or has line
+    breaks. *)
 val create
   :  id:Line_id.t
   -> key:Line_key.t
@@ -53,8 +53,8 @@ val create
 (** The line's currency. *)
 val currency : t -> Money.Currency.t
 
-(** Same key, payee, rail, amount and reference: a retried request, not a conflicting
-    use of the key. *)
+(** Same key, payee, rail, amount and reference: a retried request, not a conflicting use
+    of the key. *)
 val same_content : t -> t -> bool
 
 (** When the line first entered a status with this name ({!Line_status.name}). *)
@@ -78,15 +78,21 @@ val submit
 
 val settle : t -> at:Time_ns.t -> t Or_error.t
 val fail : t -> Failure.t -> at:Time_ns.t -> t Or_error.t
-val return : t -> ?reason:Payments_core.Iso_reason.t -> at:Time_ns.t -> unit -> t Or_error.t
+
+val return
+  :  t
+  -> ?reason:Payments_core.Iso_reason.t
+  -> at:Time_ns.t
+  -> unit
+  -> t Or_error.t
+
 val cancel : t -> at:Time_ns.t -> t Or_error.t
 
 (** Follows the line's transfer: [Settled] settles, [Rejected], [Failed] and [Cancelled]
     fail, [Returned] and [Recalled] return; statuses on the way ([Submitted], [Pending],
-    [Timed_out], which can still settle late, a recall request, a reorg) leave the line
-    as it is. A status the line already
-    reflects is not an error, so the same provider event can be applied twice. Fails
-    when the transfer is not the line's. *)
+    [Timed_out], which can still settle late, a recall request, a reorg) leave the line as
+    it is. A status the line already reflects is not an error, so the same provider event
+    can be applied twice. Fails when the transfer is not the line's. *)
 val observe : t -> Payments_core.Transfer.t -> at:Time_ns.t -> t Or_error.t
 
 module Stable : sig

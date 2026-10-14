@@ -10,9 +10,9 @@
 
 open! Core
 
-(** An outgoing transfer draft for the line, debiting its funding account. SEPA rails
-    need [details] (the pacs.008 fields); other rails fill theirs in. The transfer still
-    needs an authorization (an SCA challenge or a recorded exemption) before it can be
+(** An outgoing transfer draft for the line, debiting its funding account. SEPA rails need
+    [details] (the pacs.008 fields); other rails fill theirs in. The transfer still needs
+    an authorization (an SCA challenge or a recorded exemption) before it can be
     submitted. Fails when the line is not funded. *)
 val draft_transfer
   :  Line.t

@@ -36,9 +36,9 @@ module Policy = struct
   let allow_all _ ~approver:_ = Ok ()
   let one_approval = { required_approvals = (fun _ -> 1); authorize = allow_all }
 
-  (* [Some limit] and the total exceeds it. A limit given in another currency than the
-     one asked for is a configuration mistake; it counts as exceeded, so the mistake
-     asks for more approval rather than less. *)
+  (* [Some limit] and the total exceeds it. A limit given in another currency than the one
+     asked for is a configuration mistake; it counts as exceeded, so the mistake asks for
+     more approval rather than less. *)
   let above limit total =
     match limit (Money.Amount.currency total) with
     | None -> false

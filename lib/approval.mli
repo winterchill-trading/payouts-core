@@ -1,9 +1,9 @@
 (** Who must approve a batch before any of it is paid.
 
-    A batch is approved as a whole: one decision covers every line. How many approvals
-    it needs and who may give them is a {!Policy.t}, a pair of functions, so an
-    organisation's own roles and permissions plug in without this library knowing
-    them. Two rules hold whatever the policy says:
+    A batch is approved as a whole: one decision covers every line. How many approvals it
+    needs and who may give them is a {!Policy.t}, a pair of functions, so an
+    organisation's own roles and permissions plug in without this library knowing them.
+    Two rules hold whatever the policy says:
     - maker-checker: the batch's creator never approves it;
     - each person approves a batch at most once, so two approvals are two people. *)
 
@@ -38,21 +38,20 @@ end
 module Policy : sig
   type t =
     { required_approvals : Summary.t -> int
-    (** how many different people must approve; [0] approves the batch when it is
-        created *)
+    (** how many different people must approve; [0] approves the batch when it is created *)
     ; authorize : Summary.t -> approver:Actor_id.t -> (unit, string) Result.t
-    (** whether this person may approve, reject or cancel someone else's batch: a role
-        or permission check *)
+    (** whether this person may approve, reject or cancel someone else's batch: a role or
+        permission check *)
     }
 
   (** One approval from anyone but the creator. *)
   val one_approval : t
 
-  (** Per-currency thresholds. A batch needs no approval when every currency's total is
-      at most [auto_approve_up_to] for that currency, two approvals when any currency's
-      total is above [second_approver_above], and one otherwise. A currency without a
-      threshold ([None]) never auto-approves and never needs a second approver.
-      [authorize] defaults to allowing everyone. *)
+  (** Per-currency thresholds. A batch needs no approval when every currency's total is at
+      most [auto_approve_up_to] for that currency, two approvals when any currency's total
+      is above [second_approver_above], and one otherwise. A currency without a threshold
+      ([None]) never auto-approves and never needs a second approver. [authorize] defaults
+      to allowing everyone. *)
   val thresholds
     :  ?auto_approve_up_to:(Money.Currency.t -> Money.Amount.t option)
     -> ?second_approver_above:(Money.Currency.t -> Money.Amount.t option)

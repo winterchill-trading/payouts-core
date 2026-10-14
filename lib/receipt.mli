@@ -1,10 +1,10 @@
 (** A receipt for one payout line: what was paid, to whom, how, and what happened.
 
-    A receipt is a plain value built from the batch, so it can be rendered (text here;
-    PDF or HTML by the caller), stored or sent without reading anything else. The
-    payee's account is masked to its last four characters, so a receipt is safe to
-    e-mail or log. Receipts exist once a line was handed to its rail: a line that never
-    left (still waiting, cancelled, or failed while funding) has none. *)
+    A receipt is a plain value built from the batch, so it can be rendered (text here; PDF
+    or HTML by the caller), stored or sent without reading anything else. The payee's
+    account is masked to its last four characters, so a receipt is safe to e-mail or log.
+    Receipts exist once a line was handed to its rail: a line that never left (still
+    waiting, cancelled, or failed while funding) has none. *)
 
 open! Core
 

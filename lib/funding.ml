@@ -107,7 +107,9 @@ let decide (source : Source.t) balances running ~converted (line : Line.t) =
       ( Running.set running account (Money.Amount.sub_exn available line.amount)
       , Fund { account; conversion } ))
     else (
-      let short = Decision.Fail (Insufficient_funds { required = line.amount; available }) in
+      let short =
+        Decision.Fail (Insufficient_funds { required = line.amount; available })
+      in
       match source.funding_currency with
       | None -> running, short
       | Some sell when Money.Currency.equal sell currency -> running, short
@@ -129,8 +131,8 @@ let decide (source : Source.t) balances running ~converted (line : Line.t) =
                  else
                    ( running
                    , Fail
-                       (Insufficient_funds { required = conversion.sell; available = funds })
-                   )))))
+                       (Insufficient_funds
+                          { required = conversion.sell; available = funds }) )))))
 ;;
 
 let hold_entry balances (batch : Batch.t) (line : Line.t) ~account ~now =
@@ -187,8 +189,8 @@ let plan balances source (batch : Batch.t) ~mode ?lines ?(converted = []) ~now (
   match (mode : Mode.t), failures with
   | All_or_nothing, _ :: _ -> return (Plan.Refused failures)
   | (All_or_nothing | Line_by_line), _ ->
-    (* Build each hold against the balances after the previous ones, as the journal
-       will apply them. *)
+    (* Build each hold against the balances after the previous ones, as the journal will
+       apply them. *)
     let%bind _, entries =
       List.fold_result decisions ~init:(balances, []) ~f:(fun (balances, acc) (line, d) ->
         match d with
@@ -212,7 +214,8 @@ let apply batch (plan : Plan.t) ~now =
     List.fold_result decisions ~init:batch ~f:(fun batch (id, decision) ->
       match (decision : Decision.t) with
       | Convert _ -> Ok batch
-      | Fail failure -> Batch.update_line batch id ~f:(fun l -> Line.fail l failure ~at:now)
+      | Fail failure ->
+        Batch.update_line batch id ~f:(fun l -> Line.fail l failure ~at:now)
       | Fund { account; conversion } ->
         Batch.update_line batch id ~f:(fun l ->
           Line.fund l { account; hold = Line_key.hold_id l.key; conversion } ~at:now))

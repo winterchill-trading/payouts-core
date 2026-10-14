@@ -62,21 +62,26 @@ let create ~id ~key ~payee ~rail ~amount ?(reference = "") ~now () =
     if Beneficiary.usable_on payee rail
     then Ok ()
     else
-      Or_error.error_s
-        [%message "payee cannot be reached on this rail" (rail : Rail.t)]
+      Or_error.error_s [%message "payee cannot be reached on this rail" (rail : Rail.t)]
   in
   let%bind () =
-    if is_sepa rail && not (Money.Currency.equal (Money.Amount.currency amount) Money.Currency.eur)
+    if is_sepa rail
+       && not (Money.Currency.equal (Money.Amount.currency amount) Money.Currency.eur)
     then
       Or_error.error_s
-        [%message "SEPA rails pay EUR only" ~currency:(Money.Amount.currency amount : Money.Currency.t)]
+        [%message
+          "SEPA rails pay EUR only"
+            ~currency:(Money.Amount.currency amount : Money.Currency.t)]
     else Ok ()
   in
   let%bind () =
     if String.length reference > max_reference_length
     then
       Or_error.error_s
-        [%message "reference too long" (max_reference_length : int) ~length:(String.length reference : int)]
+        [%message
+          "reference too long"
+            (max_reference_length : int)
+            ~length:(String.length reference : int)]
     else if String.exists reference ~f:(fun c -> Char.equal c '\n' || Char.equal c '\r')
     then Or_error.error_s [%message "reference has a line break"]
     else Ok ()
@@ -158,16 +163,15 @@ let target_of_transfer (status : Transfer.Status.t) : Line_status.t option =
   | Recall_requested _
   | Recall_refused _
   | Reorged
-  (* An instant payment without confirmation can still settle late, so the line waits
-     for the transfer's next status instead of failing. *)
+  (* An instant payment without confirmation can still settle late, so the line waits for
+     the transfer's next status instead of failing. *)
   | Timed_out -> None
 ;;
 
 let observe t (transfer : Transfer.t) ~at =
   match t.transfer with
   | None ->
-    Or_error.error_s
-      [%message "line has no transfer yet" ~line:(t.key : Line_key.t)]
+    Or_error.error_s [%message "line has no transfer yet" ~line:(t.key : Line_key.t)]
   | Some id when not (Transfer.Id.equal id transfer.id) ->
     Or_error.error_s
       [%message

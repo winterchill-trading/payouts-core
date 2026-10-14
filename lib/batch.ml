@@ -84,7 +84,10 @@ include Stable.V1
 
 let max_lines = 1000
 let max_title_length = 140
-let active_lines t = List.filter t.lines ~f:(fun l -> not (Line_status.equal l.status Cancelled))
+
+let active_lines t =
+  List.filter t.lines ~f:(fun l -> not (Line_status.equal l.status Cancelled))
+;;
 
 let totals_of lines =
   List.map lines ~f:(fun (l : Line.t) -> l.amount)
@@ -125,7 +128,9 @@ let approve_lines lines ~at =
 
 let cancel_lines lines ~at =
   List.map lines ~f:(fun (l : Line.t) ->
-    if Line_status.is_cancellable l.status then Line.cancel l ~at |> Or_error.ok_exn else l)
+    if Line_status.is_cancellable l.status
+    then Line.cancel l ~at |> Or_error.ok_exn
+    else l)
 ;;
 
 let bump t = { t with revision = t.revision + 1 }
@@ -149,11 +154,16 @@ let create ~id ~title ~created_by ~lines ~policy ~now =
     else Ok ()
   in
   let%bind () =
-    match List.find lines ~f:(fun (l : Line.t) -> not (Line_status.equal l.status Draft)) with
+    match
+      List.find lines ~f:(fun (l : Line.t) -> not (Line_status.equal l.status Draft))
+    with
     | None -> Ok ()
     | Some l ->
       Or_error.error_s
-        [%message "line is not a draft" ~line:(l.key : Line_key.t) ~status:(l.status : Line_status.t)]
+        [%message
+          "line is not a draft"
+            ~line:(l.key : Line_key.t)
+            ~status:(l.status : Line_status.t)]
   in
   let%bind () =
     check_unique
@@ -192,7 +202,8 @@ let create ~id ~title ~created_by ~lines ~policy ~now =
   else return { t with approvals_required = required }
 ;;
 
-let authorize t ~(policy : Approval.Policy.t) ~actor : (unit, Approval.Refusal.t) Result.t =
+let authorize t ~(policy : Approval.Policy.t) ~actor : (unit, Approval.Refusal.t) Result.t
+  =
   match policy.authorize (summary t) ~approver:actor with
   | Ok () -> Ok ()
   | Error reason -> Error (Not_allowed reason)
@@ -239,8 +250,7 @@ let decide t ~policy ~by ~creator_may ~now ~status : (t, Approval.Refusal.t) Res
     else authorize t ~policy ~actor:by
   in
   return
-    (bump
-       { t with status; decided_at = Some now; lines = cancel_lines t.lines ~at:now })
+    (bump { t with status; decided_at = Some now; lines = cancel_lines t.lines ~at:now })
 ;;
 
 let reject t ~policy ~by ~note ~now =

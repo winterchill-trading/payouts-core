@@ -17,7 +17,8 @@ module Hook = struct
   type conversion = t
 
   type t =
-    { quote : sell:Money.Currency.t -> buy:Money.Amount.t -> (conversion, string) Result.t }
+    { quote : sell:Money.Currency.t -> buy:Money.Amount.t -> (conversion, string) Result.t
+    }
 
   let none = { quote = (fun ~sell:_ ~buy:_ -> Error "no conversion configured") }
 
@@ -71,6 +72,7 @@ let validate t ~sell ~buy =
           ~expected:(sell : Money.Currency.t)
           ~got:(t.sell : Money.Amount.t)]
   else if not (Money.Amount.is_positive t.sell)
-  then Or_error.error_s [%message "conversion sells nothing" ~sell:(t.sell : Money.Amount.t)]
+  then
+    Or_error.error_s [%message "conversion sells nothing" ~sell:(t.sell : Money.Amount.t)]
   else Ok ()
 ;;

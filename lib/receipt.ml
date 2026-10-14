@@ -54,9 +54,9 @@ let last_four s =
   "****" ^ if n <= 4 then s else String.sub s ~pos:(n - 4) ~len:4
 ;;
 
-(* payments-core adds destination kinds as it learns new schemes (UK sort code and
-   account number, for instance). The final wildcard keeps receipts compiling across
-   those versions; it is silenced because it is unused whenever this match is complete. *)
+(* payments-core adds destination kinds as it learns new schemes (UK sort code and account
+   number, for instance). The final wildcard keeps receipts compiling across those
+   versions; it is silenced because it is unused whenever this match is complete. *)
 let mask_destination (d : Payments_core.Beneficiary.Destination.t) =
   match[@warning "-11"] d with
   | Bank_account { iban; _ } -> "IBAN " ^ last_four (Payments_core.Iban.to_string iban)

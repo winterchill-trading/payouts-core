@@ -1,6 +1,6 @@
 (** Why a payout line failed. Failures before submission are ours (funding); failures
-    after it come from the rail or the provider, with the scheme's reason code where
-    there is one. *)
+    after it come from the rail or the provider, with the scheme's reason code where there
+    is one. *)
 
 open! Core
 
@@ -23,8 +23,8 @@ type t =
 (** A short machine-readable code: ["insufficient_funds"], ["rejected"], ... *)
 val code : t -> string
 
-(** Whether the payee's details were at fault (a closed or wrong account), so paying
-    again to the same details will fail again. *)
+(** Whether the payee's details were at fault (a closed or wrong account), so paying again
+    to the same details will fail again. *)
 val is_payee_error : t -> bool
 
 module Stable : sig

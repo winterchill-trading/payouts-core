@@ -33,7 +33,9 @@ let check_match (line : Line.t) (from : Line.Funded_from.t) (transfer : Transfer
     | Beneficiary b -> Some b
     | External _ -> None
   in
-  let mismatch what = Or_error.error_s [%message "transfer does not match the line" what] in
+  let mismatch what =
+    Or_error.error_s [%message "transfer does not match the line" what]
+  in
   if not (Transfer.Direction.equal transfer.direction Out)
   then mismatch "direction"
   else if not (Payments_core.Rail.equal transfer.rail line.rail)
@@ -89,6 +91,8 @@ let observe batch (transfer : Transfer.t) ~now =
   match Batch.find_line_by_transfer batch transfer.id with
   | None ->
     Or_error.error_s
-      [%message "no line is paid by this transfer" ~transfer:(transfer.id : Transfer.Id.t)]
-  | Some line -> Batch.update_line batch line.id ~f:(fun l -> Line.observe l transfer ~at:now)
+      [%message
+        "no line is paid by this transfer" ~transfer:(transfer.id : Transfer.Id.t)]
+  | Some line ->
+    Batch.update_line batch line.id ~f:(fun l -> Line.observe l transfer ~at:now)
 ;;

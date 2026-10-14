@@ -1,24 +1,24 @@
 (** Reserving the money for approved lines, checked against ledger balances.
 
-    {!plan} walks the batch's [Approved] lines in order and decides, for each, against
-    the payer's available balance (what {!Ledger.Balances.available} reports, less what
+    {!plan} walks the batch's [Approved] lines in order and decides, for each, against the
+    payer's available balance (what {!Ledger.Balances.available} reports, less what
     earlier lines of the same plan already took):
     - [Fund]: the account in the line's currency covers it; the plan carries the ledger
       entry that places a hold of the line's amount under {!Line_key.hold_id}, keyed
       [<line key>/fund];
-    - [Convert]: the account is short but a {!Conversion.Hook.t} priced buying the
-      amount with the source's funding currency, and that account covers the sold
-      amount. The caller executes the conversion (crediting the line's account), then
-      plans again with the conversion in [~converted], and the line is funded;
+    - [Convert]: the account is short but a {!Conversion.Hook.t} priced buying the amount
+      with the source's funding currency, and that account covers the sold amount. The
+      caller executes the conversion (crediting the line's account), then plans again with
+      the conversion in [~converted], and the line is funded;
     - [Fail]: no account in the currency, a refused conversion, or not enough money.
 
-    {!apply} moves the lines: funded lines to [Funded], failed lines to [Failed]
-    (in {!Mode.Line_by_line}); lines waiting for a conversion stay [Approved].
+    {!apply} moves the lines: funded lines to [Funded], failed lines to [Failed] (in
+    {!Mode.Line_by_line}); lines waiting for a conversion stay [Approved].
 
-    Book [entries] in one linked journal record before saving the batch. The ledger
-    checks every hold again when it is booked, so two plans racing for the same money
-    cannot both succeed: the second record is refused, and planning again from the new
-    balances gives the right answer. *)
+    Book [entries] in one linked journal record before saving the batch. The ledger checks
+    every hold again when it is booked, so two plans racing for the same money cannot both
+    succeed: the second record is refused, and planning again from the new balances gives
+    the right answer. *)
 
 open! Core
 
@@ -45,8 +45,7 @@ module Source : sig
   (** One account per currency, no conversion. *)
   val of_accounts : (Money.Currency.t * Ledger.Account_id.t) list -> t
 
-  (** [of_accounts] that buys short currencies with [funding_currency] through
-      [hook]. *)
+  (** [of_accounts] that buys short currencies with [funding_currency] through [hook]. *)
   val with_conversion
     :  (Money.Currency.t * Ledger.Account_id.t) list
     -> funding_currency:Money.Currency.t

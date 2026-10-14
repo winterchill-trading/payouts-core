@@ -172,10 +172,13 @@ let transfer_diffs transfers (line : Line.t) : Diff.t list =
 
 let settled_totals (batch : Batch.t) transfers : Diff.t list =
   let sum_by_currency amounts =
-    List.fold amounts ~init:(Map.empty (module Money.Currency)) ~f:(fun acc a ->
-      Map.update acc (Money.Amount.currency a) ~f:(function
-        | None -> a
-        | Some s -> Money.Amount.add_exn s a))
+    List.fold
+      amounts
+      ~init:(Map.empty (module Money.Currency))
+      ~f:(fun acc a ->
+        Map.update acc (Money.Amount.currency a) ~f:(function
+          | None -> a
+          | Some s -> Money.Amount.add_exn s a))
   in
   let ours =
     List.filter_map batch.lines ~f:(fun l ->
@@ -183,25 +186,33 @@ let settled_totals (batch : Batch.t) transfers : Diff.t list =
     |> sum_by_currency
   in
   let theirs =
-    List.filter_map batch.lines ~f:(fun l -> Option.bind l.transfer ~f:(Map.find transfers))
+    List.filter_map batch.lines ~f:(fun l ->
+      Option.bind l.transfer ~f:(Map.find transfers))
     |> List.filter_map ~f:(fun (t : Transfer.t) ->
       Option.some_if (Transfer.Status.equal t.status Settled) t.amount)
     |> sum_by_currency
   in
   Map.merge ours theirs ~f:(fun ~key:currency -> function
     | `Both (a, b) when Money.Amount.equal a b -> None
-    | `Both (batch, transfers) -> Some (Diff.Settled_total_mismatch { currency; batch; transfers })
+    | `Both (batch, transfers) ->
+      Some (Diff.Settled_total_mismatch { currency; batch; transfers })
     | `Left batch ->
-      Some (Settled_total_mismatch { currency; batch; transfers = Money.Amount.zero currency })
+      Some
+        (Settled_total_mismatch
+           { currency; batch; transfers = Money.Amount.zero currency })
     | `Right transfers ->
-      Some (Settled_total_mismatch { currency; batch = Money.Amount.zero currency; transfers }))
+      Some
+        (Settled_total_mismatch
+           { currency; batch = Money.Amount.zero currency; transfers }))
   |> Map.data
 ;;
 
 let check (batch : Batch.t) ~balances ~transfers =
   let transfers =
-    List.fold transfers ~init:(Map.empty (module Transfer.Id)) ~f:(fun acc (t : Transfer.t) ->
-      Map.set acc ~key:t.id ~data:t)
+    List.fold
+      transfers
+      ~init:(Map.empty (module Transfer.Id))
+      ~f:(fun acc (t : Transfer.t) -> Map.set acc ~key:t.id ~data:t)
   in
   List.concat_map batch.lines ~f:(fun line ->
     hold_diffs balances line @ transfer_diffs transfers line)

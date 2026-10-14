@@ -1,9 +1,9 @@
 (** Checking a batch against the ledger and the transfers that pay it.
 
     {!Totals} splits each currency's requested amount over the line statuses; every line
-    is in exactly one bucket, so the buckets add up to what was requested ({!Totals.check}).
-    {!check} then compares the batch with the outside world and lists every
-    difference without fixing any:
+    is in exactly one bucket, so the buckets add up to what was requested
+    ({!Totals.check}). {!check} then compares the batch with the outside world and lists
+    every difference without fixing any:
     - a funded line's hold must be open in the ledger for exactly the line's amount, and
       the hold of a line past [Funded] must be used up;
     - a submitted line's transfer must exist, pay the line's amount, and be in a status

@@ -1,11 +1,10 @@
 (** The idempotency key of one payout line, chosen by the caller, typically from the
     request that created the line.
 
-    A key names one payment for good: a store refuses a second line with the same key
-    and different content, in any batch, so a retried request cannot pay a payee twice.
-    Every ledger entry the line causes derives its key from it ([<key>/fund],
-    [<key>/release], [<key>/submit]), and so does the ledger hold that reserves its
-    funds ([payout:<key>]).
+    A key names one payment for good: a store refuses a second line with the same key and
+    different content, in any batch, so a retried request cannot pay a payee twice. Every
+    ledger entry the line causes derives its key from it ([<key>/fund], [<key>/release],
+    [<key>/submit]), and so does the ledger hold that reserves its funds ([payout:<key>]).
 
     A key uses the ledger id alphabet ([A-Z a-z 0-9 _ - . : / @ +]) and is at most
     {!max_length} characters, which leaves room for the derived suffixes within the

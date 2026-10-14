@@ -40,8 +40,8 @@ let names =
   ]
 ;;
 
-(* A rail can report a return without ever reporting settlement (the provider folds
-   both into one event), so [submitted -> returned] is allowed. *)
+(* A rail can report a return without ever reporting settlement (the provider folds both
+   into one event), so [submitted -> returned] is allowed. *)
 let allowed_transitions =
   [ "draft", [ "approved"; "cancelled" ]
   ; "approved", [ "funded"; "failed"; "cancelled" ]

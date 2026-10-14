@@ -3,8 +3,8 @@
     indexes, listing by progress and the per-status work queue. A service runs them
     against its database store in its own test suite, next to {!Store_memory}.
 
-    Give it a fresh, empty store; the scenarios use batch ids and line keys starting
-    with [conformance-]. *)
+    Give it a fresh, empty store; the scenarios use batch ids and line keys starting with
+    [conformance-]. *)
 
 open! Core
 
