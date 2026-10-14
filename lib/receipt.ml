@@ -120,7 +120,7 @@ let of_line batch id =
 let all (batch : Batch.t) = List.filter_map batch.lines ~f:(build batch)
 
 let to_text t =
-  let time at = Time_ns.to_string_iso8601_basic at ~zone:Time_float.Zone.utc in
+  let time at = Time_ns.to_sec_string at ~zone:Time_float.Zone.utc ^ "Z" in
   let rows =
     [ "batch", sprintf "%s (%s)" t.batch_title (Batch_id.to_string t.batch)
     ; "line", Line_id.to_string t.line

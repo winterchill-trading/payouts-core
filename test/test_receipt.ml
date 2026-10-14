@@ -76,11 +76,11 @@ let%expect_test "receipts exist for submitted lines" =
     provider ref: p-ada
     created by:   maker
     approved by:  checker
-    draft:        2027-03-01T09:00:00.000000000Z
-    approved:     2027-03-01T09:01:00.000000000Z
-    funded:       2027-03-01T09:02:00.000000000Z
-    submitted:    2027-03-01T09:03:00.000000000Z
-    settled:      2027-03-01T09:04:00.000000000Z
+    draft:        2027-03-01 09:00:00Z
+    approved:     2027-03-01 09:01:00Z
+    funded:       2027-03-01 09:02:00Z
+    submitted:    2027-03-01 09:03:00Z
+    settled:      2027-03-01 09:04:00Z
     batch:        March contractors (batch-1)
     line:         bob
     payee:        bob
@@ -92,11 +92,11 @@ let%expect_test "receipts exist for submitted lines" =
     provider ref: p-bob
     created by:   maker
     approved by:  checker
-    draft:        2027-03-01T09:00:00.000000000Z
-    approved:     2027-03-01T09:01:00.000000000Z
-    funded:       2027-03-01T09:02:00.000000000Z
-    submitted:    2027-03-01T09:05:00.000000000Z
-    failed:       2027-03-01T09:06:00.000000000Z
+    draft:        2027-03-01 09:00:00Z
+    approved:     2027-03-01 09:01:00Z
+    funded:       2027-03-01 09:02:00Z
+    submitted:    2027-03-01 09:05:00Z
+    failed:       2027-03-01 09:06:00Z
     (Error ("no receipt before submission" (line cy) (status funded)))
     |}]
 ;;
