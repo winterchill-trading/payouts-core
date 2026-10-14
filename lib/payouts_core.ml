@@ -41,3 +41,9 @@ module Receipt = Receipt
 
 (** Batch totals and differences with the ledger and the transfers. *)
 module Reconciliation = Reconciliation
+
+(** Persistence as a module type. *)
+module Store = Store
+
+(** An in-memory store. *)
+module Store_memory = Store_memory
