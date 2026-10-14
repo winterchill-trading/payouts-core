@@ -17,3 +17,6 @@ module Failure = Failure
 
 (** The line state machine. *)
 module Line_status = Line_status
+
+(** Buying a line's currency through an FX hook. *)
+module Conversion = Conversion
