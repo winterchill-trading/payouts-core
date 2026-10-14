@@ -1,0 +1,17 @@
+; Built with the rest of the project (and so in CI) but not installed. The runtest rule
+; checks the output against quickstart.expected.
+
+(executable
+ (name quickstart)
+ (libraries core zarith money ledger payments-core payouts-core)
+ (preprocess
+  (pps ppx_jane)))
+
+(rule
+ (alias runtest)
+ (action
+  (progn
+   (with-stdout-to
+    quickstart.output
+    (run %{exe:quickstart.exe}))
+   (diff quickstart.expected quickstart.output))))
