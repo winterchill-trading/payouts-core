@@ -1,9 +1,9 @@
-(** Handing a funded line to its rail as a {!Payments_core.Transfer.t}.
+(** Handing a funded line to its rail as a [Payments_core.Transfer.t].
 
     The line's money is already reserved by the funding hold. Submitting moves that
     reservation to the transfer in one step: the funding hold is released (keyed
     [<line key>/submit]) and the transfer's own hold is placed by
-    {!Payments_core.Booking.transition}, so from then on payments-core books the
+    [Payments_core.Booking.transition], so from then on payments-core books the
     settlement, rejection or return of the transfer as it would for any other payment.
     Book the returned entries in one linked journal record: the available balance never
     shows the amount twice, nor frees it in between. *)
@@ -40,5 +40,5 @@ val submit
 
 (** Applies a transfer's new status to the line it pays ({!Line.observe}). Fails when no
     line of the batch is paid by it. The ledger side of the transition is
-    {!Payments_core.Booking.transition}, which the caller books as for any transfer. *)
+    [Payments_core.Booking.transition], which the caller books as for any transfer. *)
 val observe : Batch.t -> Payments_core.Transfer.t -> now:Time_ns.t -> Batch.t Or_error.t

@@ -1,7 +1,7 @@
 (** Reserving the money for approved lines, checked against ledger balances.
 
     {!plan} walks the batch's [Approved] lines in order and decides, for each, against the
-    payer's available balance (what {!Ledger.Balances.available} reports, less what
+    payer's available balance (what [Ledger.Balances.available] reports, less what
     earlier lines of the same plan already took):
     - [Fund]: the account in the line's currency covers it; the plan carries the ledger
       entry that places a hold of the line's amount under {!Line_key.hold_id}, keyed
