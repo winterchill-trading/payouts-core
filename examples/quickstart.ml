@@ -1,7 +1,7 @@
 (* A payout batch from creation to receipts: two payees paid in CHF and EUR from an
    organisation that holds EUR only, so the CHF line is funded through a conversion.
-   Everything is pure: the ledger is a [Ledger.Balances.t] value and the entries each
-   step returns are applied to it, as a journal would book them. *)
+   Everything is pure: the ledger is a [Ledger.Balances.t] value and the entries each step
+   returns are applied to it, as a journal would book them. *)
 
 open! Core
 open Payouts_core
@@ -20,10 +20,12 @@ let org_chf = account "org:acme/chf"
 let fx_desk = account "bank:fx"
 let book balances entries = Booking.apply balances entries |> ok
 
-(* The bank's side: the organisation's accounts, an FX desk and the payment chart, and
-   a 5,000 EUR deposit. *)
+(* The bank's side: the organisation's accounts, an FX desk and the payment chart, and a
+   5,000 EUR deposit. *)
 let opening_balances () =
-  let apply b event = Ledger.Balances.apply b { seq = Ledger.Balances.next_seq b; event } |> ok in
+  let apply b event =
+    Ledger.Balances.apply b { seq = Ledger.Balances.next_seq b; event } |> ok
+  in
   let accounts =
     [ Ledger.Account.create org_eur Liability
     ; Ledger.Account.create org_chf Liability
@@ -34,7 +36,10 @@ let opening_balances () =
         ~rails:[ Intraledger ]
         ~currencies:[ Money.Currency.eur; Money.Currency.chf ]
   in
-  let b = List.fold accounts ~init:Ledger.Balances.empty ~f:(fun b a -> apply b (Account_opened a)) in
+  let b =
+    List.fold accounts ~init:Ledger.Balances.empty ~f:(fun b a ->
+      apply b (Account_opened a))
+  in
   let entry key ~from ~to_ amount =
     Ledger.Entry.create
       ~idempotency_key:(Ledger.Idempotency_key.of_string key)
@@ -87,7 +92,9 @@ let () =
   let policy =
     Approval.Policy.thresholds
       ~second_approver_above:(fun currency ->
-        if Money.Currency.equal currency Money.Currency.eur then Some (eur "1000.00") else None)
+        if Money.Currency.equal currency Money.Currency.eur
+        then Some (eur "1000.00")
+        else None)
       ()
   in
   let b =
@@ -125,7 +132,10 @@ let () =
            [ Money.Currency.eur, Money.Currency.chf, Q.of_string "0.93" ])
   in
   let fund b balances ?converted minute =
-    let plan = Funding.plan balances source b ~mode:Line_by_line ?converted ~now:(at minute) () |> ok in
+    let plan =
+      Funding.plan balances source b ~mode:Line_by_line ?converted ~now:(at minute) ()
+      |> ok
+    in
     let b = Funding.apply b plan ~now:(at minute) |> ok in
     match plan with
     | Planned { decisions; entries } -> b, book balances entries, decisions
@@ -151,7 +161,9 @@ let () =
     List.fold converted ~init:balances ~f:(fun balances (id, c) ->
       let leg leg amount ~from ~to_ =
         Ledger.Entry.create
-          ~idempotency_key:(Ledger.Idempotency_key.of_string (sprintf "fx/%s/%s" (Line_id.to_string id) leg))
+          ~idempotency_key:
+            (Ledger.Idempotency_key.of_string
+               (sprintf "fx/%s/%s" (Line_id.to_string id) leg))
           ~kind:(Transfer "fx")
           ~code:Fx_leg
           ~effective_at:(at 5)
@@ -159,20 +171,35 @@ let () =
           [ Ledger.Posting.debit from amount; Ledger.Posting.credit to_ amount ]
         |> ok
       in
-      book balances [ leg "sell" c.sell ~from:org_eur ~to_:fx_desk; leg "buy" c.buy ~from:fx_desk ~to_:org_chf ])
+      book
+        balances
+        [ leg "sell" c.sell ~from:org_eur ~to_:fx_desk
+        ; leg "buy" c.buy ~from:fx_desk ~to_:org_chf
+        ])
   in
   let b, balances, _ = fund b balances ~converted 6 in
   show_batch "funded" b;
   (* Submit each line as a transfer, then the provider settles lea and rejects marc. *)
   let submit (b, balances) (line : Line.t) minute =
     let transfer =
-      Submission.draft_transfer line ~id:(Transfer.Id.of_string ("tr-" ^ Line_id.to_string line.id)) ~now:(at minute) ()
+      Submission.draft_transfer
+        line
+        ~id:(Transfer.Id.of_string ("tr-" ^ Line_id.to_string line.id))
+        ~now:(at minute)
+        ()
       |> ok
       |> Transfer.exempt ~exemption:Corporate_process
       |> ok
     in
     let b, entries =
-      Submission.submit Booking.Chart.default balances b line.id ~transfer ~event_id:("sub-" ^ Line_id.to_string line.id) ~now:(at minute)
+      Submission.submit
+        Booking.Chart.default
+        balances
+        b
+        line.id
+        ~transfer
+        ~event_id:("sub-" ^ Line_id.to_string line.id)
+        ~now:(at minute)
       |> ok
     in
     (b, book balances entries), Transfer.submit transfer ~at:(at minute) () |> ok
@@ -182,11 +209,18 @@ let () =
   show_batch "submitted" b;
   let finish (b, balances) transfer to_ minute =
     let entries =
-      Booking.transition Booking.Chart.default balances transfer ~to_ ~event_id:("fin-" ^ Transfer.Id.to_string transfer.Transfer.id) ~at:(at minute)
+      Booking.transition
+        Booking.Chart.default
+        balances
+        transfer
+        ~to_
+        ~event_id:("fin-" ^ Transfer.Id.to_string transfer.Transfer.id)
+        ~at:(at minute)
       |> ok
     in
     let transfer = Transfer.transition transfer ~to_ ~at:(at minute) |> ok in
-    (Submission.observe b transfer ~now:(at minute) |> ok, book balances entries), transfer
+    ( (Submission.observe b transfer ~now:(at minute) |> ok, book balances entries)
+    , transfer )
   in
   let ac04 = Payments_core.Iso_reason.of_code "AC04" |> ok in
   let state, lea = finish (b, balances) lea Settled 9 in
@@ -194,8 +228,10 @@ let () =
   show_batch "done" b;
   printf
     "balances   %s, %s\n\n"
-    (Money.Amount.to_string (Ledger.Balances.available balances org_eur Money.Currency.eur))
-    (Money.Amount.to_string (Ledger.Balances.available balances org_chf Money.Currency.chf));
+    (Money.Amount.to_string
+       (Ledger.Balances.available balances org_eur Money.Currency.eur))
+    (Money.Amount.to_string
+       (Ledger.Balances.available balances org_chf Money.Currency.chf));
   List.iter (Receipt.all b) ~f:(fun r -> print_endline (Receipt.to_text r));
   List.iter (Reconciliation.Totals.of_batch b) ~f:(fun t ->
     printf
