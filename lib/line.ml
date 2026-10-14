@@ -44,9 +44,11 @@ let max_reference_length = 140
 let currency t = Money.Amount.currency t.amount
 
 let is_sepa (rail : Rail.t) =
+  (* A wildcard on purpose: payments-core gains rails over time, and only the SEPA ones
+     restrict the currency here. *)
   match rail with
   | Sepa_credit | Sepa_instant -> true
-  | Onchain _ | Lightning | Intraledger | Card_scheme -> false
+  | _ -> false
 ;;
 
 let create ~id ~key ~payee ~rail ~amount ?(reference = "") ~now () =
