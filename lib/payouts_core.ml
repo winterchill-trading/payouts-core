@@ -11,3 +11,6 @@ module Actor_id = Actor_id
 
 (** Per-line idempotency keys and the ledger keys derived from them. *)
 module Line_key = Line_key
+
+(** Why a line failed. *)
+module Failure = Failure
