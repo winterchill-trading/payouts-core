@@ -29,3 +29,6 @@ module Approval = Approval
 
 (** Batches: approval, cancellation, derived progress. *)
 module Batch = Batch
+
+(** Funding approved lines against ledger balances. *)
+module Funding = Funding
