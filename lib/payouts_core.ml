@@ -14,3 +14,6 @@ module Line_key = Line_key
 
 (** Why a line failed. *)
 module Failure = Failure
+
+(** The line state machine. *)
+module Line_status = Line_status
