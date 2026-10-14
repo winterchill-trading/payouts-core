@@ -35,3 +35,6 @@ module Funding = Funding
 
 (** Turning funded lines into transfers, and following them. *)
 module Submission = Submission
+
+(** Receipts as values. *)
+module Receipt = Receipt
