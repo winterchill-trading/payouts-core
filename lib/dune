@@ -1,0 +1,6 @@
+(library
+ (name payouts_core)
+ (public_name payouts-core)
+ (libraries core zarith money ledger payments-core)
+ (preprocess
+  (pps ppx_jane)))
