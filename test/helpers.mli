@@ -40,7 +40,7 @@ val org_account : Money.Currency.t -> Ledger.Account_id.t
 
 (** Balances with [org:1/eur], [org:1/chf] and [org:1/usdc] open (liabilities), a cash
     account allowed to go negative, the default chart's settlement and fee accounts, and
-    one deposit per amount into the org account of its currency. *)
+    one deposit per positive amount into the org account of its currency. *)
 val ledger : Money.Amount.t list -> Ledger.Balances.t
 
 (** Applies entries as a journal would; raises on a refusal. *)

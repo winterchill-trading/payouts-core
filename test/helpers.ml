@@ -132,7 +132,7 @@ let ledger deposits =
     List.fold accounts ~init:Ledger.Balances.empty ~f:(fun b a ->
       apply_event b (Account_opened a))
   in
-  List.fold deposits ~init:balances ~f:deposit
+  List.fold (List.filter deposits ~f:Money.Amount.is_positive) ~init:balances ~f:deposit
 ;;
 
 let book balances entries =
