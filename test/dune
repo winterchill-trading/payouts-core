@@ -1,0 +1,8 @@
+(library
+ (name payouts_core_test)
+ (libraries core base_quickcheck zarith money ledger payments-core payouts-core)
+ (inline_tests
+  (flags
+   (:standard -source-tree-root .)))
+ (preprocess
+  (pps ppx_jane)))
