@@ -38,3 +38,6 @@ module Submission = Submission
 
 (** Receipts as values. *)
 module Receipt = Receipt
+
+(** Batch totals and differences with the ledger and the transfers. *)
+module Reconciliation = Reconciliation
