@@ -18,7 +18,6 @@ type t =
   | Rejected of Payments_core.Iso_reason.t (** the scheme rejected the payment *)
   | Transfer_failed of Payments_core.Transfer.Failure_reason.t
   (** the transfer failed on our side after submission (SCA, expiry, provider error) *)
-  | Timed_out (** an instant payment got no confirmation in time *)
 [@@deriving sexp, compare, equal]
 
 (** A short machine-readable code: ["insufficient_funds"], ["rejected"], ... *)

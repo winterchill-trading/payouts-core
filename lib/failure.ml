@@ -12,7 +12,6 @@ module Stable = struct
       | Submission_refused of string
       | Rejected of Payments_core.Iso_reason.Stable.V1.t
       | Transfer_failed of Payments_core.Transfer.Failure_reason.t
-      | Timed_out
     [@@deriving bin_io, sexp, compare, equal]
   end
 end
@@ -26,7 +25,6 @@ let code = function
   | Submission_refused _ -> "submission_refused"
   | Rejected _ -> "rejected"
   | Transfer_failed _ -> "transfer_failed"
-  | Timed_out -> "timed_out"
 ;;
 
 let is_payee_error = function
@@ -35,6 +33,5 @@ let is_payee_error = function
   | No_funding_account _
   | Conversion_unavailable _
   | Submission_refused _
-  | Transfer_failed _
-  | Timed_out -> false
+  | Transfer_failed _ -> false
 ;;
